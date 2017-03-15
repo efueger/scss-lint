@@ -175,6 +175,32 @@ module SCSSLint
       end
     end
 
+    # duplicate code below
+    
+    def extract_preferred_order_from_config
+      case config['order']
+      when nil
+        nil # No custom order specified
+      when Array
+        config['order']
+      when String
+        begin
+          file = File.open(File.join(SCSS_LINT_DATA,
+                                     'property-sort-orders',
+                                     "#{config['order']}.txt"))
+          file.read.split("\n").reject { |line| line =~ /^\s*#/ }
+        rescue Errno::ENOENT
+          raise SCSSLint::Exceptions::LinterError,
+                "Preset property sort order '#{config['order']}' does not exist"
+        end
+      else
+        raise SCSSLint::Exceptions::LinterError,
+              'Invalid property sort order specified -- must be the name of a '\
+              'preset or an array of strings'
+      end
+    end
+    
+    
     # Return whether to ignore a property in the sort order.
     #
     # This includes:
